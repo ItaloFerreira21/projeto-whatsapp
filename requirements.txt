@@ -1,3 +1,6 @@
 # Lista de dependências do projeto
 Flask==3.0.0
+Flask-Migrate
+Flask-SQLAlchemy
 requests
+psycopg2-binary
