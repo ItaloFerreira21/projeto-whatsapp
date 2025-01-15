@@ -11,3 +11,12 @@ export const registerUser = async (userdata: { email: string; password: string }
 };
 
 //outras funções de autenticação aqui 
+//função para login de usuário
+export const loginUser = async (userdata: { email: string; password: string }) => {
+  try {
+    const response = await api.post('/auth/login', userdata);
+    return response.data;
+  } catch (error: any) {
+    return error.response.data;
+  }
+};

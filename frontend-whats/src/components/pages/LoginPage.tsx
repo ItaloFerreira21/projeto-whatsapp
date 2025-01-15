@@ -1,75 +1,80 @@
-import { useForm } from 'react-hook-form';
-import { yupResolver } from '@hookform/resolvers/yup';
-import * as yup from 'yup';
-import axios from 'axios';
-import { toast } from 'react-toastify';
+import React, { useState } from 'react';
+import { loginUser } from "../../service.ts/authservice"; // O serviço de login
 
-const loginSchema = yup.object().shape({
-  email: yup.string().email('E-mail inválido').required('E-mail é obrigatório'),
-  password: yup.string().min(6, 'A senha deve ter pelo menos 6 caracteres').required('Senha é obrigatória'),
-});
+const LoginPage: React.FC = () => {
+  const [formData, setFormData] = useState({ email: '', password: '' });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
 
-const LoginPage = () => {
-  const { register, handleSubmit, formState: { errors } } = useForm({
-    resolver: yupResolver(loginSchema),
-  });
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
+  };
 
-  interface LoginFormInputs {
-    email: string;
-    password: string;
-  }
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError('');
+    setSuccess('');
 
-  interface LoginResponse {
-    data: {
-      token: string;
-      user: {
-        id: string;
-        email: string;
-        name: string;
-      };
-    };
-  }
-
-  const onSubmit = async (data: LoginFormInputs) => {
     try {
-      const response = await axios.post<LoginResponse>(`${import.meta.env.VITE_BACKEND_URL}/auth/login`, data);
-      toast.success('Login realizado com sucesso!');
-      console.log(response.data); // Aqui, você pode salvar o token no Context ou Zustand
-    } catch (error) {
-      toast.error('Erro ao fazer login. Verifique suas credenciais.');
+      const result = await loginUser(formData);
+      setSuccess('Usuário logado com sucesso!');
+      console.log('Resultado:', result); // Apenas para debug
+    } catch (err: any) {
+      setError(err || 'Erro ao fazer login');
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className="flex items-center justify-center h-screen bg-gray-100">
-      <form onSubmit={handleSubmit(onSubmit)} className="bg-white p-6 rounded shadow-md w-96">
-        <h1 className="text-2xl font-bold mb-4">Login</h1>
-        
+    <div className="min-h-screen flex items-center justify-center">
+      <form className="w-full max-w-md bg-white p-8 shadow-lg rounded" onSubmit={handleSubmit}>
+        <h2 className="text-2xl font-bold mb-6 text-center">Login</h2>
+
+        {error && <p className="text-red-500 text-center mb-4">{error}</p>}
+        {success && <p className="text-green-500 text-center mb-4">{success}</p>}
+
         <div className="mb-4">
-          <label className="block mb-2 text-sm font-medium">E-mail</label>
+          <label className="block text-gray-700 font-bold mb-2" htmlFor="email">
+            Email
+          </label>
           <input
-            {...register('email')}
             type="email"
-            className="w-full p-2 border rounded focus:outline-none focus:ring"
+            id="email"
+            name="email"
+            value={formData.email}
+            onChange={handleChange}
+            className="w-full border border-gray-300 rounded px-3 py-2"
+            required
           />
-          {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email.message}</p>}
         </div>
-        
-        <div className="mb-4">
-          <label className="block mb-2 text-sm font-medium">Senha</label>
+
+        <div className="mb-6">
+          <label className="block text-gray-700 font-bold mb-2" htmlFor="password">
+            Senha
+          </label>
           <input
-            {...register('password')}
             type="password"
-            className="w-full p-2 border rounded focus:outline-none focus:ring"
+            id="password"
+            name="password"
+            value={formData.password}
+            onChange={handleChange}
+            className="w-full border border-gray-300 rounded px-3 py-2"
+            required
           />
-          {errors.password && <p className="text-red-500 text-sm mt-1">{errors.password.message}</p>}
         </div>
-        
+
         <button
           type="submit"
-          className="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600"
+          className={`w-full bg-blue-500 text-white font-bold py-2 px-4 rounded hover:bg-blue-600 ${
+            loading ? 'opacity-50 cursor-not-allowed' : ''
+          }`}
+          disabled={loading}
         >
-          Entrar
+          {loading ? 'Logando...' : 'Login'}
         </button>
       </form>
     </div>
