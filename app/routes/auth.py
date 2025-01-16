@@ -17,6 +17,7 @@ def register():
 
         username = data.get("username")
         password = data.get("password")
+        confirPassword = data.get("confirPassword")
 
         # Validação dos dados
         if not username or not password:
@@ -25,6 +26,9 @@ def register():
         # Opcional: Validar critérios mínimos de senha
         if len(password) < 8:
             return jsonify({"error": "A senha deve ter pelo menos 8 caracteres"}), 400
+        
+        if password != confirPassword:
+            return jsonify({"error": "As senhas não conferem"}), 400
         
         # Verificar se o usuário já existe
         existing_user = User.query.filter_by(username=username).first()

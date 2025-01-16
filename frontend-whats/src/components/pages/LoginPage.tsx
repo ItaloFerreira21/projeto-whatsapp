@@ -1,11 +1,18 @@
 import React, { useState } from 'react';
 import { loginUser } from "../../service.ts/authservice"; // O serviço de login
+import { z } from 'zod'; 
 
 const LoginPage: React.FC = () => {
   const [formData, setFormData] = useState({ email: '', password: '' });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+
+  // Validação com Zod
+  const schema = z.object({
+    email: z.string().email('Formato de email inválido'),
+    password: z.string().min(8, 'Senha deve ter no mínimo 8 caracteres'),
+  });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -19,10 +26,21 @@ const LoginPage: React.FC = () => {
     setSuccess('');
 
     try {
-      const result = await loginUser(formData);
-      setSuccess('Usuário logado com sucesso!');
+
+      // Validação com Zod
+      schema.parse(formData);
+
+      const result = await loginUser(formData); 
       console.log('Resultado:', result); // Apenas para debug
+      setSuccess('Usuário logado com sucesso!');
+      
     } catch (err: any) {
+      // Lidar com erros de validação ou backend
+      if (err instanceof z.ZodError) {
+        setError(err.errors[0].message); // Exibe a primeira mensagem de erro
+      } else {
+        setError(err.message || 'Erro desconhecido');
+      }
       setError(err || 'Erro ao fazer login');
     } finally {
       setLoading(false);

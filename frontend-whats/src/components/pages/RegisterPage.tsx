@@ -1,10 +1,21 @@
 import React, { useState } from 'react';
 import { registerUser } from "../../service.ts/authservice";
+import { z } from 'zod';
+
 const RegisterPage: React.FC = () => {
-  const [formData, setFormData] = useState({ email: '', password: '', conformPassword: '' });
+  const [formData, setFormData] = useState({ email: '', password: '', confirmPassword: '' });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+
+  const schema = z.object({
+    email: z.string().email("Formato de email invalido"),
+    password: z.string().min(8, "Senha deve ter no minimo 8 caracteres"),
+    confirmPassword: z.string().min(8),
+  }).refine((data) => data.password === data.confirmPassword, {
+    message: "Senhas não conferem",
+    path: ["confirmPassword"],
+  })
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -17,18 +28,27 @@ const RegisterPage: React.FC = () => {
     setError('');
     setSuccess('');
 
-    if (formData.password !== formData.conformPassword) {
+    if (formData.password !== formData.confirmPassword) {
       setError('Senhas não conferem');
       setLoading(false);
       return;
     }
 
     try {
-      const result = await registerUser(formData);
+      //validação com zod
+      schema.parse(formData);
+
+      // Enviar dados ao backend
+      const result = await registerUser({ email: formData.email, password: formData.password, confirmPassword: formData.confirmPassword });
       setSuccess('Usuário registrado com sucesso!');
       console.log('Resultado:', result); // Apenas para debug
     } catch (err: any) {
-      setError(err || 'Erro desconhecido');
+      // Lidar com erros de validação ou backend
+      if (err instanceof z.ZodError) {
+        setError(err.errors[0].message); // Exibe a primeira mensagem de erro
+      } else {
+        setError(err.message || 'Erro desconhecido');
+      }
     } finally {
       setLoading(false);
     }
@@ -79,8 +99,8 @@ const RegisterPage: React.FC = () => {
           <input
             type="password"
             id="conformPassword"
-            name="conformPassword"
-            value={formData.conformPassword}
+            name="confirmPassword"
+            value={formData.confirmPassword}
             onChange={handleChange}
             className="w-full border border-gray-300 rounded px-3 py-2"
             required
