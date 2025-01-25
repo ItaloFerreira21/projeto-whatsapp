@@ -7,11 +7,3 @@ psycopg2-binary
 
 
 
-        #para rodar o backend (localmente):
-# 1°- source /home/italo/venv/bin/activate 
-# 2°- flask run
-
-
-        #para rodar o frontend (localmente):    
-# 1°- cd frontend-whats
-# 2°- npm run dev 

@@ -2,42 +2,49 @@ from flask import Blueprint, request, jsonify
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_jwt_extended import create_access_token
 from app.models import User, db
+import pdb  # Importar o módulo pdb para depuração
 
 # Defina o Blueprint
 auth_bp = Blueprint('auth', __name__)
 
 @auth_bp.route('/register', methods=['POST'])
-
 def register():
     try:
         # Obter dados da requisição
         data = request.get_json()
+        # pdb.set_trace()
         if not isinstance(data, dict):
             return jsonify({"error": "Dados inválidos, o corpo da requisição deve ser JSON"}), 400
 
         username = data.get("username")
+        email = data.get("email")
         password = data.get("password")
-        confirPassword = data.get("confirPassword")
+        confirmPassword = data.get("confirmPassword")
 
         # Validação dos dados
-        if not username or not password:
-            return jsonify({"error": "Username e senha são obrigatórios"}), 400
+        if not username or not email or not password:
+            return jsonify({"error": "Username, email e senha são obrigatórios"}), 400
         
         # Opcional: Validar critérios mínimos de senha
         if len(password) < 8:
             return jsonify({"error": "A senha deve ter pelo menos 8 caracteres"}), 400
         
-        if password != confirPassword:
+        if password != confirmPassword:
             return jsonify({"error": "As senhas não conferem"}), 400
         
         # Verificar se o usuário já existe
         existing_user = User.query.filter_by(username=username).first()
-        if existing_user:
+        if (existing_user):
             return jsonify({"error": "Usuário já existe"}), 400
+        
+        # Verificar se o email já existe
+        existing_email = User.query.filter_by(email=email).first()
+        if (existing_email):
+            return jsonify({"error": "Email já existe"}), 400
         
         # Criar um novo usuário
         hashed_password = generate_password_hash(password)
-        new_user = User(username=username, password=hashed_password)
+        new_user = User(username=username, email=email, password=hashed_password)
         db.session.add(new_user)
         db.session.commit()
 
@@ -75,7 +82,6 @@ def login():
 
     except Exception as e:
         # Capturar erros inesperados
-        return jsonify({"error": f"Erro interno no servidor: {str(e)}"}), 500        
-        
+        return jsonify({"error": f"Erro interno no servidor: {str(e)}"}), 500
 
 
