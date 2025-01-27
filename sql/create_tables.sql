@@ -15,3 +15,16 @@ CREATE TABLE "record" (
     action VARCHAR(255) NOT NULL,
     timestamp TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
+
+
+-- Criação da tabela freelancers
+CREATE TABLE freelancer (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER NOT NULL REFERENCES "user"(id),
+    nome_completo VARCHAR(255) NOT NULL,
+    celular VARCHAR(15) NOT NULL,
+    sexo VARCHAR(1) NOT NULL, -- M, F, O
+    email VARCHAR(255) NOT NULL,
+    rg VARCHAR(20) NOT NULL,
+    chave_pix VARCHAR(77) NOT NULL -- Chave PIX obrigatória com até 77 caracteres
+);

@@ -1,46 +1,58 @@
-import api from './api';
+import axios from 'axios';
 
-interface LoginData {
-  email: string;
-  password: string;
-}
+// Obter a URL base da API a partir da variável de ambiente
+const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
 
-//função para registro de usuário
-export const registerUser = async (userdata: { email: string; password: string; confirmPassword: string }) => {
+// Configuração da instância do axios
+const api = axios.create({
+  baseURL: apiBaseUrl, // Use a variável de ambiente para a URL base
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
+
+// Função para registro de usuário
+export const registerUser = async (userdata: { username: string; email: string; password: string; confirmPassword: string; cnpj: string; company_name?: string; phone_number?: string }) => {
   try {
     const response = await api.post('/auth/register', userdata);
-    console.log("RESPOSTA DA API",response);
+    console.log("RESPOSTA DA API", response);
     return response.data;
   } catch (error: any) {
-    console.log("ERRO DA API",error.response);
+    console.log("ERRO DA API", error.response);
     return error.response ? error.response.data : { error: 'Erro desconhecido' };
   }
 };
 
-//outras funções de autenticação aqui 
-//função para login de usuário
-/* export const loginUser = async (userdata: { email: string; password: string }) => {
+// Função para login de usuário
+export const loginUser = async (userdata: { username: string; password: string }) => {
   try {
     const response = await api.post('/auth/login', userdata);
-    console.log("RESPOSTA DA API",response);
-    return response.data;
-  } catch (error: any) {
-    console.log("ERRO DA API",error.response);
-    return error.response ? error.response.data : { error: 'Erro desconhecido' };
-  }
-}; */
+    const { token } = response.data;
 
-//Implementação de Autenticação com JWT
-export const loginUser = async (data: LoginData) => {
-  try {
-    const response = await api.post('/auth/login', data);
-    const { token } = response.data.token;
-
+    // Armazenar o token JWT no localStorage
     localStorage.setItem('auth.token', token);
     return response.data;
-
   } catch (error: any) {
-    return error.response.data;
+    console.log("ERRO DA API", error.response);
+    return error.response ? error.response.data : { error: 'Erro desconhecido' };
   }
-}
+};
 
+// Função para obter o token JWT do localStorage
+export const getToken = () => {
+  return localStorage.getItem('auth.token');
+};
+
+// Configurar o axios para adicionar o token JWT ao cabeçalho de autorização
+api.interceptors.request.use(
+  (config) => {
+    const token = getToken();
+    if (token) {
+      config.headers['Authorization'] = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);

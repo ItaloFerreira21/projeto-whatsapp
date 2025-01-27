@@ -1,26 +1,15 @@
-from flask import Flask
-from flask_sqlalchemy import SQLAlchemy
-from flask_migrate import Migrate
+from flask import Blueprint
+
+# Importar os Blueprints
 from .auth import auth_bp
+from .freelancer import freelancer_bp
 
+# Definir uma lista de Blueprints para facilitar o registro
+all_blueprints = [
+    (auth_bp, '/auth'),
+    (freelancer_bp, '/freelancer')
+]
 
-# Inicialize extensões (SQLAlchemy e Migrate)
-db = SQLAlchemy()
-migrate = Migrate()
-
-
-def create_app():
-    app = Flask(__name__)
-
-    # Configuração do banco de dados
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:172421@localhost:5432/userswpp'  
-    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-
-    # Inicializar extensões com a aplicação
-    db.init_app(app)
-    migrate.init_app(app, db)
-
-    # Registrar o Blueprint de autenticação
-    app.register_blueprint(auth_bp, url_prefix='/auth')
-
-    return app
+def register_blueprints(app):
+    for bp, url_prefix in all_blueprints:
+        app.register_blueprint(bp, url_prefix=url_prefix)
