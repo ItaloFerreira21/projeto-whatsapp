@@ -34,16 +34,23 @@ def get_freelancers():
         return jsonify({"error": "Erro ao buscar freelancers"}), 500
 
 # Rota para adicionar freelancers
-@freelancer_bp.route('/api/freelancers', methods=['OPTIONS', 'POST'])
+@freelancer_bp.route('/api/freelancers', methods=['POST'])
 @cross_origin()  # Habilita CORS para essa rota
 def handle_freelancer():
-    if request.method == "OPTIONS":
-        # Responde ao preflight com sucesso
-        return '', 200
 
     # Método POST - Adicionar freelancer
     if request.method == "POST":
         return add_freelancer()
+    
+@app.route("/api/freelancers", methods=["OPTIONS"])
+@cross_origin()
+def handle_options():
+    # Configura o cabeçalho de resposta para permitir a requisição
+    response = jsonify({})
+    response.headers["Access-Control-Allow-Origin"] = "*"
+    response.headers["Access-Control-Allow-Methods"] = "POST, OPTIONS"
+    response.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization"
+    return response
 
 def add_freelancer():
     try:
