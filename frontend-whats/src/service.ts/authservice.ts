@@ -47,6 +47,8 @@ export const getToken = () => {
 api.interceptors.request.use(
   (config) => {
     const token = getToken();
+    console.log("Token usado na requisição:", token);
+
     if (token) {
       config.headers['Authorization'] = `Bearer ${token}`;
     }
