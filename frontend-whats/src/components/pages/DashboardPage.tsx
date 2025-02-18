@@ -53,24 +53,6 @@ const DashboardPage: React.FC = () => {
     }
   };
 
-  const handleOptionsRequest = async () => {
-    try {
-      const response = await fetch('http://localhost:5000/api/freelancers', {
-        method: 'OPTIONS',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
-      if (response.ok) {
-        console.log('OPTIONS request successful');
-      } else {
-        console.error('Erro na requisição OPTIONS:', response.statusText);
-      }
-    } catch (error) {
-      console.error('Erro na requisição OPTIONS:', error);
-    }
-  };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;

@@ -36,8 +36,8 @@ def create_app():
         return response
 
     # Importar e registrar os Blueprints
-    from app.routes import api_bp
-    app.register_blueprint(api_bp)
+    from app.routes import register_blueprints
+    register_blueprints(app)  # Registre os Blueprints no aplicativo Flask
 
     # Exibir as rotas registradas (útil para depuração)
     with app.app_context():
