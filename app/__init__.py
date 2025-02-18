@@ -24,28 +24,26 @@ def create_app():
     jwt.init_app(app)  # Inicializar JWTManager com a aplicação Flask
 
     # Configurar o CORS para permitir o frontend específico
-    CORS(app, resources={r"/api/*": {"origins": "*"}})
-
+    CORS(app, resources={r"/api/*": {"origins": "http://localhost:5173"}}, supports_credentials=True)
 
     # Adicionar cabeçalhos CORS manualmente para garantir que 'Access-Control-Allow-Credentials' seja verdadeiro
     @app.after_request
     def after_request(response):
         response.headers['Access-Control-Allow-Credentials'] = 'true'
-        response.headers['Access-Control-Allow-Origin'] = 'http://localhost:5173'  
+        response.headers['Access-Control-Allow-Origin'] = 'http://localhost:5173'
         response.headers['Access-Control-Allow-Headers'] = 'Authorization, Content-Type'  # Permite os headers necessários
         response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE, OPTIONS'  # Permite os métodos HTTP
         return response
 
-
     # Importar e registrar os Blueprints
-    from app.routes import register_blueprints
-    register_blueprints(app)
-    
+    from app.routes import api_bp
+    app.register_blueprint(api_bp)
+
     # Exibir as rotas registradas (útil para depuração)
     with app.app_context():
         print("Rotas registradas:")
-    for rule in app.url_map.iter_rules():
-        print(rule)
+        for rule in app.url_map.iter_rules():
+            print(rule)
 
     return app
 

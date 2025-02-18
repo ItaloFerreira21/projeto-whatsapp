@@ -1,37 +1,34 @@
-# Rotas da aplicação
+from flask import Blueprint, jsonify, request
+from app import db
+from app.models import Freelancer
+from flask_jwt_extended import jwt_required, get_jwt_identity
 
-""" from flask import Blueprint, request, jsonify
+# Crie o Blueprint para agrupar as rotas
+api_bp = Blueprint('api', __name__)
 
-routes = Blueprint("routes", __name__)
+# Rota para listar todos os freelancers
+@api_bp.route('/api/freelancers', methods=['GET', 'POST', 'OPTIONS'])
+@jwt_required()  # Verifica se o token JWT está presente e é válido
+def get_freelancers():
+    if request.method == 'OPTIONS':
+        return jsonify({'message': 'OK'}), 200
 
-# Lista os critérios disponíveis para seleção de participantes
-@routes.route("/list-criteria", methods=["GET"])
-def list_criteria():
-    criteria = [
-        "Os mais ativos",
-        "Por ordem de disponibilidade",
-        "Por gênero",
-        "Aleatório"
-    ]
-    return jsonify({"criteria": criteria})
-
-# Endpoint para criar um grupo no WhatsApp
-@routes.route("/create-group", methods=["POST"])
-def create_group():
-    data = request.json
-    group_name = data.get("group_name")
-    number_of_participants = data.get("number_of_participants")
-    criteria = data.get("criteria")
-
-    # Validação básica
-    if not group_name or not number_of_participants or not criteria:
-        return jsonify({"error": "Dados incompletos"}), 400
-
-    # Aqui adicionaremos a lógica de criação de grupo futuramente
-    return jsonify({
-        "message": "Grupo criado com sucesso!",
-        "group_name": group_name,
-        "number_of_participants": number_of_participants,
-        "criteria": criteria
-    })
- """
+    try:
+        # Recupera todos os freelancers do banco de dados
+        freelancers = Freelancer.query.all()
+        # Serializa os freelancers para enviar como resposta JSON
+        freelancers_list = [
+            {
+                'id': freelancer.id,
+                'nome_completo': freelancer.nome_completo,
+                'celular': freelancer.celular,
+                'sexo': freelancer.sexo,
+                'email': freelancer.email,
+                'rg': freelancer.rg,
+                'chave_pix': freelancer.chave_pix
+            }
+            for freelancer in freelancers
+        ]
+        return jsonify(freelancers_list), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500

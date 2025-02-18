@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios, { AxiosResponse } from 'axios';
-import { getToken } from '../../service.ts/authservice'; // Certifique-se de que o caminho está correto
+import { getToken } from '../../service.ts/authservice';
 
 // Definir os tipos para o Freelancer e a resposta da API
 interface Freelancer {
@@ -34,21 +34,43 @@ const DashboardPage: React.FC = () => {
   });
 
   useEffect(() => {
-    const token = getToken();
-    console.log('Token enviado:', token); // Verifique se o token é válido
-    axios.get('http://localhost:5000/api/freelancers', {
-      headers: {
-        Authorization: `Bearer ${token}`
-      }
-    })
-    .then((response: AxiosResponse<Freelancer[]>) => {
-      console.log('Resposta da API:', response.data);  // Confirme se a resposta é correta
-      setFreelancers(response.data);
-    })
-    .catch(error => {
-      console.error('Erro ao buscar freelancers:', error);
-    });
+    fetchFreelancers();
   }, []);
+
+  const fetchFreelancers = async () => {
+    try {
+      const response = await fetch('http://localhost:5000/api/freelancers', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+      const data = await response.json();
+      setFreelancers(data);
+    } catch (error) {
+      console.error('Erro ao buscar freelancers:', error);
+    }
+  };
+
+  const handleOptionsRequest = async () => {
+    try {
+      const response = await fetch('http://localhost:5000/api/freelancers', {
+        method: 'OPTIONS',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+      if (response.ok) {
+        console.log('OPTIONS request successful');
+      } else {
+        console.error('Erro na requisição OPTIONS:', response.statusText);
+      }
+    } catch (error) {
+      console.error('Erro na requisição OPTIONS:', error);
+    }
+  };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
